@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 import rclpy
 import rclpy.logging
 import rclpy.node
@@ -28,7 +30,17 @@ def main(args=None):
     param_descriptor = ParameterDescriptor(
         description='The file name of the URDF file relative to the ROS2 workspace.'
     )
-    node.declare_parameter('xacro_file', '', param_descriptor)
+
+    xacro_file_name = ''
+
+    try:
+        xacro_file_name = sys.argv[1]
+    except:
+        rclpy.logging.get_logger('xacro_live').error('No argument passed. Path to xacro-file expected.')
+        rclpy.shutdown()
+        return
+
+    node.declare_parameter('xacro_file', xacro_file_name, param_descriptor)
 
     observer = XacroObserver(node.get_parameter('xacro_file').get_parameter_value().string_value)
     client = RobotDescriptionClient(node, 'robot_state_publisher')
